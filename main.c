@@ -1,7 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include"phoneBook.h"
-#include"balanceBinarySearchTree.h"
 #include<string.h>
 
 enum SECLET
@@ -13,7 +12,6 @@ enum SECLET
     MODIFY,
     QUIT
 };
-
 
 
 int CompareName(void *arg1, void *arg2)
@@ -39,7 +37,7 @@ int main()
     phoneBookTree *BookStree = NULL;
 
     /* 通讯录初始化 */
-    phoneBookTreeInit(*BookStree, CompareName, printStruct);
+    phoneBookTreeInit(BookStree, CompareName, printStruct);
 
         int choice = 0;    
         //int count = 0;    

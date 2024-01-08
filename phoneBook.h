@@ -1,13 +1,12 @@
-#ifndef __BINARY_SEARCH_TREE_H_
-#define __BINARY_SEARCH_TREE_H_
+#ifndef __PHONEBOOK_H_
+#define __PHONEBOOK_H_
 #include "common.h"
-#include "balanceBinarySearchTree.h"
 
 #define BUFFER_SIZE1 20
 #define BUFFER_SIZE2 12
 #define BUFFER_SIZE3 50
 
-typedef BalanceBinarySearchTree phoneBookTree;
+typedef AVLTree phoneBookTree;
 typedef AVLTreeNode phoneBookNode;
 
 /* 定义通讯录人员信息结构体 */
