@@ -1,5 +1,5 @@
-#ifndef __COMMON_H_
-#define __COMMON_H_
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
 #define ELEMENTTYPE void*
 
@@ -25,5 +25,32 @@ typedef struct DoubleLinkList
     int len;
 } DoubleLinkList;
 
+
+typedef struct AVLTreeNode
+{
+    ELEMENTTYPE data;
+    /* 结点维护一个高度属性 */
+    int height;
+    struct AVLTreeNode *left;        /* 左子树 */
+    struct AVLTreeNode *right;       /* 右子树 */
+    #if 1
+    struct AVLTreeNode *parent;      /* 父结点 */
+    #endif
+} AVLTreeNode;
+
+typedef struct AVLTree
+{   
+    /* 根结点 */
+    AVLTreeNode * root;
+    /* 树的结点个数 */
+    int size;
+
+    /* 钩子🪝函数比较器 放到结构体内部. */
+    int (*compareFunc)(ELEMENTTYPE val1, ELEMENTTYPE val2);
+
+    /* 钩子🪝函数 包装器实现自定义打印函数接口. */
+    int (*printFunc)(ELEMENTTYPE val);
+
+} AVLTree;
 
 #endif //__COMMON_H_
