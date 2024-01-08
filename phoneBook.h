@@ -4,42 +4,36 @@
 
 #define BUFFER_SIZE1 20
 #define BUFFER_SIZE2 12
-#define BUFFER_SIZE3 50
 
-typedef AVLTree phoneBookTree;
-typedef AVLTreeNode phoneBookNode;
+
+typedef AVLTree phoneBook;
+// typedef AVLTreeNode contactPerson;
 
 /* 定义通讯录人员信息结构体 */
-typedef struct phoneBook
+typedef struct contactPerson
 {
     char name[BUFFER_SIZE1];
-    char sex;
-    int age;
-    int teleNumber[BUFFER_SIZE2];
-    char address[BUFFER_SIZE3];
-}phoneBook;
+    char teleNumber[BUFFER_SIZE2];
 
-/* 通讯录菜单 */
-int phoneBookMenu();
+} contactPerson;
 
-/* 人员信息初始化 */
-phoneBook *createInit(phoneBook *data, char *name, char *sex,  char *age, char *teleNumber, char *address);
+
 
 /* 通讯录的初始化 */
-int phoneBookTreeInit(phoneBookTree **pBstree, int (*compareFunc)(ELEMENTTYPE val1, ELEMENTTYPE val2), int (*printFunc)(ELEMENTTYPE val));
+int phoneBookTreeInit(phoneBook **pPhoneBook);
 
 /* 联系人的增加 */
-int phoneBookTreeInsert(phoneBookTree *pBstree, ELEMENTTYPE val);
+int phoneBookTreeInsert(phoneBook *pPhoneBook);
 
 /* 联系人的查找 */
-int phoneBookTreeFind(phoneBookTree *pBstree, ELEMENTTYPE val);
+int phoneBookTreeFind(phoneBook *pPhoneBook);
 
 /* 联系人的修改 */
-int phoneBookTreeChange(phoneBookTree *pBstree, ELEMENTTYPE val);
+int phoneBookTreeChange(phoneBook *pPhoneBook);
 
 
 /* 联系人的删除 */
-phoneBookDelete(phoneBookTree *pBstree, ELEMENTTYPE data, char *val);
+phoneBookDelete(phoneBook *pPhoneBook);
 
 
 
