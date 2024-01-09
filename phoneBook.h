@@ -18,6 +18,8 @@ typedef struct contactPerson
 } contactPerson;
 
 
+/* 打印界面 */
+void menu();//菜单
 
 /* 通讯录的初始化 */
 int phoneBookTreeInit(phoneBook **pPhoneBook);

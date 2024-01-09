@@ -22,6 +22,9 @@ int main()
     /* 通讯录初始化 */
     phoneBookTreeInit(&BookStree);
 
+    /* 打印界面 */
+    menu();//菜单
+
     int choice = 0;    
     //int count = 0;    
     while ( choice < QUIT && choice >= 0)
