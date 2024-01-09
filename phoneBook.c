@@ -1,248 +1,208 @@
 #include"phoneBook.h"
+#include"AVLTree.h"
 #include<stdlib.h>
+#include<string.h>
+#include <stdio.h>
 
+/* 状态码 */
 enum STATUS_CODE
 {
-    ON_SUCCESS,
-    NULL_PTR,
-    MALLOC_ERROR,
-    INVALID_ACCESS,
+    SUCCESS = 0,
+    NULL_PTR = -1,
+    MALLOC_ERROR = -2,
+    ILLEGAL_ACCESS = -3,
+    UNDERFLOW = -4,
 };
+/* 宏函数 */
+/* 检测分配空间是否成功 */
+#define CHECK_MALLOC_ERROR(ptr)                 \
+    do                                          \
+    {                                           \
+        if(ptr == NULL)                         \
+        {                                       \
+            return MALLOC_ERROR;                \
+        }                                       \
+    } while(0)
+/* 释放节点 */
+#define FREE_NODE(node)                         \
+    do                                          \
+    {                                           \
+        if(node != NULL)                        \
+        {                                       \
+            free(node);                         \
+            node = NULL;                        \
+        }                                       \
+    } while(0)
 
-int phoneBookMenu()
+
+/* 比较函数 */
+int compareFunc(ELEMENTTYPE p1, ELEMENTTYPE p2)
 {
-    printf("***********************************\n");
-    printf("********1.添加联系人信息***********\n");
-    printf("********2.删除指定联系人信息*******\n");
-    printf("********3.查找指定联系人信息*******\n");
-    printf("********4.修改指定联系人信息*******\n");
-    printf("************按0退出程序************\n");
-    printf("***********************************\n");
-
+    contactPerson *data1 = (contactPerson*)p1;
+    contactPerson *data2 = (contactPerson*)p2;
+    /* 比较 */
+    return strcmp((char*)data1->name, (char*)data2->name);
 }
-
-
-/* 判空 */
-static int panNull(phoneBookTree *pBstree);
-
-/* 获取指定联系人的结点 */
-static phoneBookNode * baseAppointValGetAVLTreeNode(phoneBookTree *pBstree, ELEMENTTYPE val);
-
-/* 判空 */
-static int panNull(phoneBookTree *pBstree)
+/* 打印函数*/
+int printFunc(ELEMENTTYPE p1)
 {
-    int ret = 0;
-    if (pBstree == NULL)
-    {
-        return NULL_PTR;
-    }
-    return 0;
+    printf("name:%s\n", ((contactPerson*)p1)->name);
+    printf("teleNumber:%s\n", ((contactPerson*)p1)->teleNumber);
+    return SUCCESS;
+
 }
 
 /* 通讯录初始化 */
-int phoneBookTreeInit(phoneBookTree **pBstree, int (*compareFunc)(ELEMENTTYPE val1, ELEMENTTYPE val2), int (*printFunc)(ELEMENTTYPE val))
+int phoneBookTreeInit(phoneBook **pPhoneBook)
 {
-    int ret = 0;
-    phoneBookTree * bstree = (phoneBookTree *)malloc(sizeof(phoneBookTree) * 1);
-    if (bstree == NULL)
-    {
-        return MALLOC_ERROR;
-    }
-    /* 清除脏数据 */
-    memset(bstree, 0, sizeof(phoneBookTree) * 1);
-    /* 初始化树 */
-    {
-        bstree->root = NULL;
-        bstree->size = 0;
-
-        /* 钩子函数在这边赋值. */
-        bstree->compareFunc = compareFunc;
-        /* 钩子函数包装器 自定义打印. */
-        bstree->printFunc = printFunc;
-    }
-    bstree->root = createAVLTreeNewNode(0, NULL);
-    if (bstree->root == NULL)
-    {
-        return MALLOC_ERROR;
-    }
-    *pBstree = bstree;
-    return ret;
+    AVLInit(pPhoneBook,compareFunc,printFunc);
+    return SUCCESS;
 }
 
-/* 人员信息结点初始化 */
-phoneBook *createInit(phoneBook *data, char *name, char *sex,  char *age, char *teleNumber, char *address)
+/* 查找姓名相同的节点 */
+static contactPerson* findAContact(phoneBook *pPhoneBook, char *name)
 {
-    data = (phoneBook*)malloc(sizeof(phoneBook));
-    if (data == NULL)
+    AVLTreeNode *travelNode = pPhoneBook->root;
+    AVLTreeNode *tempNode = (AVLTreeNode *) malloc(sizeof(AVLTreeNode));
+    if(tempNode == NULL)
     {
         return NULL;
     }
-    strncpy(data->name, name, BUFFER_SIZE1 - 1);
-    strncpy(&data->sex, sex, sizeof(data->sex));
-    strncpy(data->age, age, sizeof(data->age));
-    strncpy(data->teleNumber, teleNumber, BUFFER_SIZE2 - 1);
-    strncpy(data->address, address, BUFFER_SIZE3 - 1);
-    
-}
-
-/* 插入新的联系人 */
-int phoneBookInsert(phoneBookTree *pBstree, ELEMENTTYPE val)
-{
-    int ret = 0;
-    panNull(*pBstree);
-
-    printf("请输入姓名\n");
-    scanf("%s", data->name);
-
-    printf("请输入性别\n");
-    scanf("%s",  &data->sex);
-
-    printf("请输入年龄\n");
-    scanf("%d",  &data->age);
-
-    printf("请输入电话号码\n");
-    scanf("%d",  data->telephone);
-
-    printf("请输入地址\n");
-    scanf("%s", data->address);
-
-    balanceBinarySearchTreeInsert(pBstree,data);
-    return ret;
-}
-
-static phoneBookNode * baseAppointValGetAVLTreeNode(phoneBookTree *pBstree, ELEMENTTYPE val)
-{
-    phoneBookNode * travelNode = pBstree->root;
+    memset(tempNode, 0, sizeof(AVLTreeNode));
+    contactPerson *data = (contactPerson*)malloc(sizeof(contactPerson));
+    if(data == NULL)
+    {
+        return NULL;
+    }
+    memset(data, 0, sizeof(contactPerson));
+    strncpy(data->name, name, sizeof(char)*strlen(name));
+    tempNode->data = data;
 
     int cmp = 0;
     while (travelNode != NULL)
     {
-        /* 比较大小 */
-        cmp = pBstree->compareFunc(val, travelNode->data);
-        if (cmp < 0)
+        cmp = compareFunc(travelNode->data,tempNode->data);
+        if (cmp == 0)
         {
-            travelNode = travelNode->left;
+            /* 销毁临时节点及数据 */
+            FREE_NODE(tempNode);
+            FREE_NODE(data);
+
+            return travelNode->data;
         }
         else if (cmp > 0)
         {
-            travelNode = travelNode->right;
+            travelNode = travelNode->left;
         }
         else
         {
-            /* 找到了. */
-            return travelNode;
+            travelNode = travelNode->right;
         }
     }
+    /* 销毁临时节点及数据 */
+    FREE_NODE(tempNode);
+    FREE_NODE(data);
     return NULL;
 }
 
-/* 联系人的查找 */
-int phoneBookTreeFind(phoneBookTree *pBstree, ELEMENTTYPE val)
+/* 插入新的联系人 */
+int phoneBookTreeInsert(phoneBook *pPhoneBook)
 {
-    int ret = 0;
-    phoneBook *target = data; 
-    printf("请输入你要查找的姓名：\n");
-    scanf("%s", target->name);
-    data = (phoneBook *)baseAppointValGetaddressBookNode(pBstree, data);
-    if (target == NULL)
+
+    /* 判空 */
+    CHECK_MALLOC_ERROR(pPhoneBook);
+
+
+    contactPerson *data = (contactPerson*)malloc(sizeof(contactPerson));
+    if (data == NULL)
+    {
+        return MALLOC_ERROR;
+    }
+    /* 清除脏数据 */
+    memset(data, 0, sizeof(contactPerson));
+
+    printf("请输入姓名\n");
+    scanf("%s", data->name);
+
+    printf("请输入电话号码\n");
+    scanf("%s",  data->teleNumber);
+
+    /* 插入 */
+    AVLInsert(pPhoneBook, data);
+
+    return SUCCESS;
+}
+
+
+
+/* 联系人的查找 */
+int phoneBookTreeFind(phoneBook *pPhoneBook)
+{
+    /* 判空 */
+    CHECK_MALLOC_ERROR(pPhoneBook);
+    /* 输入姓名 */
+    char *name = malloc(BUFFER_SIZE1);
+    memset(name, 0, BUFFER_SIZE1);
+    printf("请输入姓名：\n");
+    scanf("%s", name);
+    /* 查找 */
+    contactPerson *data = (contactPerson*)findAContact(pPhoneBook, name);
+    if(data == NULL)
     {
         printf("未找到相匹配的联系人\n");
-        return -1;
+        return SUCCESS;
     }
-    pBstree->printFunc(data);
-    return ret;
+    printf("姓名：%s\n", data->name);
+    printf("电话：%s\n", data->teleNumber);
+
+    return SUCCESS;
 }
 
 
 /* 联系人的修改 */
-int phoneBookTreeChange(phoneBookTree *pBstree, ELEMENTTYPE val)
+int phoneBookTreeChange(phoneBook *pBstree)
 {
-    int ret = 0;
-    phoneBook *target = data;
-    printf("请输入要修改的人员姓名：\n");
-    scanf("%s", target->name);
-    target = (phoneBook *)baseAppointValGetaddressBookNode(pBstree, data);
-       if (target == NULL)
+    /* 判空 */
+    CHECK_MALLOC_ERROR(pBstree);
+    /* 输入姓名 */
+    char *name = malloc(BUFFER_SIZE1);
+    memset(name, 0, BUFFER_SIZE1);
+    printf("请输入姓名：\n");
+    scanf("%s", name);
+    /* 查找 */
+    contactPerson *data = (contactPerson*)findAContact(pBstree, name);
+    if(data == NULL)
     {
         printf("未找到相匹配的联系人\n");
-        printf("输入该联系人的信息：\n");
-        createPersontarget(target, target->name, &target->sex, target->age, target->teleNumber, target->address); /*   标记  */
-        addressBookInsert(pBstree,target);
-        return 0;
+        return SUCCESS;
     }
-    int choice = 0;
-    while (choice <= 6)
-    {
-        printf("请输入要修改的名称:\n");
-        printf("1、姓名 2、性别 3、年龄 4、电话 5、地址  6、退出\n");
-        scanf("%d", &choice);
-        switch (choice)
-        {
-        case 1:
-            printf("请输入新的名字：\n");
-            char *newName = malloc(BUFFER_SIZE1);
-            memset(newName, 0, BUFFER_SIZE1);
-            scanf("%s", newName);
-            *target->name = *newName;
-            phoneBook newtarget = *target;
-            phoneBookTreeDelete(pBstree, target, target->name);
-            phoneBookTreeInsert(pBstree, &newtarget); 
-        break;
+    /* 修改 */
+    printf("请输入新的电话号码\n");
+    scanf("%s", data->teleNumber);
+    return SUCCESS;
 
-        case 2:
-            printf("请输入新的性别：\n");
-            char  newSex; 
-            memset(&newSex, 0, sizeof(char));
-            scanf("%c",&newSex);
-            strncpy(&target->sex, &newSex, sizeof(target->sex));
-        break;
-
-        case 3:
-            printf("请输入新的年龄：\n");
-            int  newAge; 
-            memset(&newAge, 0, sizeof(int));
-            scanf("%c",&newAge);
-            strncpy(&target->age, &newAge, sizeof(target->age));
-        break;
-
-        case 4:
-            printf("请输入新的电话：\n");
-            char  *newTelephone = malloc(BUFFER_SIZE2);
-            memset(newTelephone, 0, BUFFER_SIZE2);
-            scanf("%s",newTelephone);
-            strncpy(target->teleNumber, newTelephone, BUFFER_SIZE2);
-        break;
-
-
-        case 5:
-            printf("请输入新的地址：\n");
-            char  *newAddress = malloc(BUFFER_SIZE3);
-            memset(newAddress, 0, BUFFER_SIZE3);
-            scanf("%s",newAddress);
-            strncpy(target->address, newAddress, BUFFER_SIZE3);
-        break;
-
-        case 6:
-            return 0;
-        break;
-
-        default:
-            return 0;
-            break;
-        }  
-
-    }
-
-    return ret;
 }
 
 
 /* 联系人的删除 */
-phoneBookDelete(phoneBookTree *pBstree, ELEMENTTYPE data, char *val)
+int phoneBookDelete(phoneBook *pPhoneBook)
 {
-    int ret = 0;
-    phoneBook *target = data; 
-    balanceBinarySearchTreeDelete(pBstree, data);
-    return ret;
+    /* 判空 */
+    CHECK_MALLOC_ERROR(pPhoneBook);
+    /* 输入姓名 */
+    char *name = malloc(BUFFER_SIZE1);
+    memset(name, 0, BUFFER_SIZE1);
+    printf("请输入姓名：\n");
+    scanf("%s", name);
+    /* 查找 */
+    contactPerson *data = (contactPerson*)findAContact(pPhoneBook, name);
+    if(data == NULL)
+    {
+        printf("未找到相匹配的联系人\n");
+        return SUCCESS;
+    }
+    /* 删除 */
+    AVLDelete(pPhoneBook, data);
+    return SUCCESS;
 }
 
