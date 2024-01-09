@@ -136,7 +136,7 @@ int phoneBookTreeInsert(phoneBook *pPhoneBook)
 {
 
     /* 判空 */
-    CHECK_NODE_NULL(pPhoneBook);
+    CHECK_MALLOC_ERROR(pPhoneBook);
 
 
     contactPerson *data = (contactPerson*)malloc(sizeof(contactPerson));
