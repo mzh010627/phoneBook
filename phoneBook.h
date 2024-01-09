@@ -33,7 +33,7 @@ int phoneBookTreeChange(phoneBook *pPhoneBook);
 
 
 /* 联系人的删除 */
-phoneBookDelete(phoneBook *pPhoneBook);
+int phoneBookDelete(phoneBook *pPhoneBook);
 
 
 
