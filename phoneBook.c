@@ -33,6 +33,15 @@ enum STATUS_CODE
             node = NULL;                        \
         }                                       \
     } while(0)
+/* 树判空 */
+#define CHECK_NODE_NULL(phoneBook)              \
+    do                                          \
+    {                                           \
+        if(phoneBook->size == 0)               \
+        {                                       \
+            return UNDERFLOW;                   \
+        }                                       \
+    } while(0)
 
 
 /* 比较函数 */
@@ -62,6 +71,7 @@ int phoneBookTreeInit(phoneBook **pPhoneBook)
 /* 查找姓名相同的节点 */
 static contactPerson* findAContact(phoneBook *pPhoneBook, char *name)
 {
+    /* 判空 */
     AVLTreeNode *travelNode = pPhoneBook->root;
     AVLTreeNode *tempNode = (AVLTreeNode *) malloc(sizeof(AVLTreeNode));
     if(tempNode == NULL)
@@ -110,7 +120,7 @@ int phoneBookTreeInsert(phoneBook *pPhoneBook)
 {
 
     /* 判空 */
-    CHECK_MALLOC_ERROR(pPhoneBook);
+    CHECK_NODE_NULL(pPhoneBook);
 
 
     contactPerson *data = (contactPerson*)malloc(sizeof(contactPerson));
@@ -129,6 +139,8 @@ int phoneBookTreeInsert(phoneBook *pPhoneBook)
 
     /* 插入 */
     AVLInsert(pPhoneBook, data);
+    /* 反馈 */
+    printf("插入成功\n");
 
     return SUCCESS;
 }
@@ -139,7 +151,7 @@ int phoneBookTreeInsert(phoneBook *pPhoneBook)
 int phoneBookTreeFind(phoneBook *pPhoneBook)
 {
     /* 判空 */
-    CHECK_MALLOC_ERROR(pPhoneBook);
+    CHECK_NODE_NULL(pPhoneBook);
     /* 输入姓名 */
     char *name = malloc(BUFFER_SIZE1);
     memset(name, 0, BUFFER_SIZE1);
@@ -163,7 +175,7 @@ int phoneBookTreeFind(phoneBook *pPhoneBook)
 int phoneBookTreeChange(phoneBook *pBstree)
 {
     /* 判空 */
-    CHECK_MALLOC_ERROR(pBstree);
+    CHECK_NODE_NULL(pBstree);
     /* 输入姓名 */
     char *name = malloc(BUFFER_SIZE1);
     memset(name, 0, BUFFER_SIZE1);
@@ -188,7 +200,7 @@ int phoneBookTreeChange(phoneBook *pBstree)
 int phoneBookDelete(phoneBook *pPhoneBook)
 {
     /* 判空 */
-    CHECK_MALLOC_ERROR(pPhoneBook);
+    CHECK_NODE_NULL(pPhoneBook);
     /* 输入姓名 */
     char *name = malloc(BUFFER_SIZE1);
     memset(name, 0, BUFFER_SIZE1);
