@@ -1,3 +1,4 @@
+
 #自定义变量
 OBJ = main.o AVLTree.o doubleLinkList.o doubleLinkListQueue.o phoneBook.o
 TARGET = main
@@ -18,3 +19,4 @@ mul.o:phoneBook.c
 
 clean:
 	@rm -rf  *.o main
+
