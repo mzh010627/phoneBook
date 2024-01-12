@@ -3,6 +3,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include <stdio.h>
+#include <unistd.h>
 
 /* 状态码 */
 enum STATUS_CODE
@@ -66,13 +67,14 @@ int printFunc(ELEMENTTYPE p1)
 
 void menu()//菜单
 {
-    printf("***********************************\n");
-    printf("********1.添加联系人信息***********\n");
-    printf("********2.查找指定联系人信息*******\n");
-    printf("********3.删除指定联系人信息*******\n");
-    printf("********4.修改指定联系人信息*******\n");
-    printf("************按0退出程序************\n");
-    printf("***********************************\n");
+    system("clear");//清屏
+    printf("----------------------------------\n");
+    printf("| 1.添加联系人信息               |\n");
+    printf("| 2.查找指定联系人信息           |\n");
+    printf("| 3.删除指定联系人信息           |\n");
+    printf("| 4.修改指定联系人信息           |\n");
+    printf("| 按0退出程序                    |\n");
+    printf("----------------------------------\n");
 
 }
 
@@ -157,6 +159,7 @@ int phoneBookTreeInsert(phoneBook *pPhoneBook)
     AVLInsert(pPhoneBook, data);
     /* 反馈 */
     printf("插入成功\n");
+    sleep(1);
 
     return SUCCESS;
 }
@@ -178,6 +181,7 @@ int phoneBookTreeFind(phoneBook *pPhoneBook)
     if(data == NULL)
     {
         printf("未找到相匹配的联系人\n");
+        sleep(1);
         return SUCCESS;
     }
     printf("姓名：%s\n", data->name);
@@ -202,6 +206,7 @@ int phoneBookTreeChange(phoneBook *pBstree)
     if(data == NULL)
     {
         printf("未找到相匹配的联系人\n");
+        sleep(1);
         return SUCCESS;
     }
     /* 修改 */
@@ -227,6 +232,7 @@ int phoneBookDelete(phoneBook *pPhoneBook)
     if(data == NULL)
     {
         printf("未找到相匹配的联系人\n");
+        sleep(1);
         return SUCCESS;
     }
     /* 删除 */
