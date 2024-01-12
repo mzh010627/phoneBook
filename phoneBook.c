@@ -181,7 +181,7 @@ int phoneBookTreeFind(phoneBook *pPhoneBook)
     if(data == NULL)
     {
         printf("未找到相匹配的联系人\n");
-        sleep(1);
+        sleep(1);//睡眠
         return SUCCESS;
     }
     printf("姓名：%s\n", data->name);
