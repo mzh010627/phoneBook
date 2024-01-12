@@ -1,9 +1,22 @@
-src=main.c doubleLinkList.c doubleLinkListQueue.c AVLTree.c phoneBook.c
-test:${src}
-	gcc ${src} -o test
 
-g:${src}
-	gcc -g ${src} -o gtest
+#自定义变量
+OBJ = main.o AVLTree.o doubleLinkList.o doubleLinkListQueue.o phoneBook.o
+TARGET = main
+
+#使用变量:$(变量名)
+$(TARGET): $(OBJ)
+	gcc $^ -o $@
+
+
+add.o: AVLTree.c
+	gcc -c $^ -o $@
+sub.o:doubleLinkList.c
+	gcc -c $^ -o $@
+div.o:doubleLinkListQueue.c
+	gcc -c $^ -o $@
+mul.o:phoneBook.c
+	gcc -c $^ -o $@
 
 clean:
-	@rm -rf test gtest
+	@rm -rf  *.o main
+
