@@ -33,9 +33,14 @@ int phoneBookTreeFind(phoneBook *pPhoneBook);
 /* 联系人的修改 */
 int phoneBookTreeChange(phoneBook *pPhoneBook);
 
-
 /* 联系人的删除 */
 int phoneBookDelete(phoneBook *pPhoneBook);
+
+/* 通讯录销毁 */
+int phoneBookTreeDestroy(phoneBook *pPhoneBook);
+
+/* 打印所有联系人 */
+int phoneBookTreePrint(phoneBook *pPhoneBook);
 
 
 

@@ -11,7 +11,8 @@ enum SECLET
     FIND,
     DELETE,
     MODIFY,
-    QUIT
+    PRINT,
+    QUIT,
 };
 
 
@@ -22,14 +23,13 @@ int main()
     /* 通讯录初始化 */
     phoneBookTreeInit(&BookStree);
 
-
+    /* 打印界面 */
+    menu();//菜单
 
     int choice = 0;    
     //int count = 0;    
     while ( choice < QUIT && choice >= 0)
     {
-        /* 打印界面 */
-        menu();//菜单
         printf("请输入选项\n");
         scanf("%d", &choice);
         switch (choice)
@@ -53,6 +53,12 @@ int main()
                 phoneBookDelete(BookStree);
                 break;
             }
+            /* 打印联系人表 */
+            case PRINT:
+            {
+                phoneBookTreePrint(BookStree);
+                break;
+            }
             /* 修改联系人信息 */
             case MODIFY:
             {
@@ -61,7 +67,16 @@ int main()
             }
             default:
                 choice = QUIT;
+                phoneBookTreeDestroy(BookStree);
+                return 0;
         }
+        
+        /* 等待一个按键*/
+        printf("按回车键继续...");
+        getchar();
+        getchar();
+        printf("\n");
+        menu();//菜单
     }
 
 

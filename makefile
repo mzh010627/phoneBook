@@ -7,7 +7,6 @@ TARGET = main
 $(TARGET): $(OBJ)
 	gcc $^ -o $@
 
-
 add.o: AVLTree.c
 	gcc -c $^ -o $@
 sub.o:doubleLinkList.c
@@ -18,5 +17,4 @@ mul.o:phoneBook.c
 	gcc -c $^ -o $@
 
 clean:
-	@rm -rf  *.o main
-
+	@rm -rf  *.o $(TARGET)
