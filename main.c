@@ -12,6 +12,7 @@ enum SECLET
     DELETE,
     MODIFY,
     PRINT,
+    DESTROY,
     QUIT,
 };
 
@@ -65,9 +66,15 @@ int main()
                 phoneBookTreeChange(BookStree);
                 break;
             }
+            /* 通讯录清空 */
+            case DESTROY:
+            {
+                phoneBookTreeDestroy(BookStree,0);
+                return 0;
+            }
             default:
                 choice = QUIT;
-                phoneBookTreeDestroy(BookStree);
+                phoneBookTreeDestroy(BookStree,1);
                 return 0;
         }
         

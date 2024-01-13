@@ -54,13 +54,13 @@ enum STATUS_CODE
 
 /* 静态函数声明 */
 /* 通讯录保存 */
-static int savePhoneBook(phoneBook *pPhoneBook, contactPerson *data, char* mode);
+static int savePhoneBook(phoneBook *pPhoneBook);
 /* 通讯录读取 */
 static int readPhoneBook(phoneBook *pPhoneBook);
-/* 通讯录联系人删除的本地处理 */
-static int deletePhoneBook(phoneBook *pPhoneBook,contactPerson *data);
-/* 节点在中序遍历中的位置 */
-static int findInInOrderPosition(AVLTreeNode * root, contactPerson *data, int *position);
+// /* 通讯录联系人删除的本地处理 */
+// static int deletePhoneBook(phoneBook *pPhoneBook,contactPerson *data);
+// /* 节点在中序遍历中的位置 */
+// static int findInInOrderPosition(AVLTreeNode * root, contactPerson *data, int *position);
 
 
 /* 比较函数 */
@@ -98,6 +98,7 @@ void menu()//菜单
     printf("| 3.删除指定联系人信息           |\n");
     printf("| 4.修改指定联系人信息           |\n");
     printf("| 5.查看通讯录                   |\n");
+    printf("| 6.清空通讯录                   |\n");
     printf("| 按0退出程序                    |\n");
     printf("----------------------------------\n");
 
@@ -195,14 +196,9 @@ int phoneBookTreeInsert(phoneBook *pPhoneBook)
 
     /* 插入 */
     AVLInsert(pPhoneBook, data);
+
     /* 反馈 */
     printf("插入成功\n");
-    int count = 0;
-    findInInOrderPosition(pPhoneBook->root, data, &count);
-    printf("ID:%d\n", count);
-
-    /* 保存 */
-    savePhoneBook(pPhoneBook, data, "ab+");
 
     return SUCCESS;
 }
@@ -252,8 +248,8 @@ int phoneBookTreeChange(phoneBook *pPhoneBook)
     /* 修改 */
     printf("请输入新的电话号码\n");
     scanf("%s", data->teleNumber);
-    /* 保存 */
-    savePhoneBook(pPhoneBook, data, "rb+");
+    /* 反馈 */
+    printf("修改成功\n");
     return SUCCESS;
 
 }
@@ -276,17 +272,30 @@ int phoneBookDelete(phoneBook *pPhoneBook)
         return SUCCESS;
     }
     contactPerson *data = (contactPerson*)Node->data;
-    deletePhoneBook(pPhoneBook, data);
     /* 删除 */
     AVLDelete(pPhoneBook, data);
+    /* 反馈 */
+    printf("删除成功\n");
     return SUCCESS;
 }
 
 /* 通讯录销毁 */
-int phoneBookTreeDestroy(phoneBook *pPhoneBook)
+int phoneBookTreeDestroy(phoneBook *pPhoneBook, int save)
 {
     /* 判空 */
     CHECK_NODE_NULL(pPhoneBook);
+
+    if(save == 1)
+    {
+        /* 保存数据到本地 */
+        savePhoneBook(pPhoneBook);
+        printf("保存成功\n");
+    }
+    else
+    {
+        printf("已清空联系人\n");
+    }
+    
     /* 销毁 */
     AVLDestroy(pPhoneBook);
     return SUCCESS;
@@ -295,6 +304,8 @@ int phoneBookTreeDestroy(phoneBook *pPhoneBook)
 /* 打印所有联系人 */
 int phoneBookTreePrint(phoneBook *pPhoneBook)
 {
+    /* 判空 */
+    CHECK_NODE_NULL(pPhoneBook);
     return AVLInOrderTravel(pPhoneBook);
 }
 
@@ -302,26 +313,47 @@ int phoneBookTreePrint(phoneBook *pPhoneBook)
 /* 静态函数部分 */
 
 /* 通讯录保存 */
-static int savePhoneBook(phoneBook *pPhoneBook, contactPerson *data, char* mode)
+static int savePhoneBook(phoneBook *pPhoneBook)
 {
+    /* 判空 */
 
-    /* 判断是删除还是修改 */
-    int size = 0;
-    findInInOrderPosition(pPhoneBook->root, data, &size);
-
-    
     /*文件不存在则新建 */
-    FILE *fd = fopen("phoneBook.bak", mode);
+    FILE *fd = fopen("phoneBook.bak", "wb");
     
-    
-    if(fd == NULL)
+    DoubleLinkListQueue * pQueue = NULL;
+    doubleLinkListQueueInit(&pQueue);
+
+    /* 1. 根结点入队 */
+    doubleLinkListQueuePush(pQueue, pPhoneBook->root);
+
+    /* 2. 判断队列是否为空 */
+    AVLTreeNode *nodeVal = NULL;
+    while (!doubleLinkListQueueIsEmpty(pQueue))
     {
-        return ILLEGAL_ACCESS;
+        doubleLinkListQueueTop(pQueue, (void **)&nodeVal);
+
+        /* 保存 */
+        fwrite(nodeVal->data, sizeof(contactPerson), 1, fd);
+
+        doubleLinkListQueuePop(pQueue);
+
+        /* 将左子树入队. */
+        if (nodeVal->left != NULL)
+        {
+            doubleLinkListQueuePush(pQueue, nodeVal->left);
+        }
+
+        /* 将右子树入队. */
+        if (nodeVal->right != NULL)
+        {
+            doubleLinkListQueuePush(pQueue, nodeVal->right);
+        }
     }
-    /* 定位到位置 */
-    fseek(fd, sizeof(contactPerson) * (size-1), SEEK_SET);
-    /* 保存 */
-    fwrite(data, sizeof(contactPerson), 1, fd);
+
+    /* 释放队列 */
+    doubleLinkListQueueDestroy(pQueue);
+
+    
     fclose(fd);
     return SUCCESS;
 }
@@ -348,7 +380,7 @@ static int readPhoneBook(phoneBook *pPhoneBook)
         contactPerson data;// 用来接数据
         fseek(fd, sizeof(contactPerson) * idx, SEEK_SET);
         fread(&data, sizeof(contactPerson), 1, fd);
-        printf("Name: %s, TeleNumber: %s\n", data.name, data.teleNumber);
+        // printf("Name: %s, TeleNumber: %s\n", data.name, data.teleNumber);
         /* 插入 */
         contactPerson *pData = (contactPerson*)malloc(sizeof(contactPerson));
         if(pData == NULL)
@@ -362,89 +394,5 @@ static int readPhoneBook(phoneBook *pPhoneBook)
     }
     
     fclose(fd);
-    return SUCCESS;
-}
-
-/* 通讯录联系人删除的本地处理 */
-static int deletePhoneBook(phoneBook *pPhoneBook,contactPerson *data)
-{
-    FILE * fd = fopen("phoneBook.bak","rb+");
-    if(fd == NULL)
-    {
-        perror("fopen error");
-        return ILLEGAL_ACCESS;
-    }
-
-    /* 定位要删除的位置 */
-    int size = 0;
-    findInInOrderPosition(pPhoneBook->root, data, &size);
-    long start = sizeof(contactPerson) * size;
-    if(fseek(fd, start, SEEK_SET) != 0)
-    {
-        perror("fseek error");
-        return ILLEGAL_ACCESS;
-    }
-
-    /* 迁移后续数据 */
-    char buffer[BUFFER_SIZE] = {0};
-    long remaining = sizeof(contactPerson);
-    while(remaining > 0)
-    {
-        size_t readSize = fread(buffer, 1, sizeof(buffer), fd);
-        if(readSize == 0)
-        {
-            perror("fread error");
-            fclose(fd);
-            return ILLEGAL_ACCESS;
-        }
-
-        /* 重新定位指针 */
-        if(fseek(fd, -(readSize + sizeof(contactPerson)), SEEK_CUR) != 0)
-        {
-            perror("fseek error");
-            fclose(fd);
-            return ILLEGAL_ACCESS;
-        }
-        /* 写入 */
-        if(fwrite(buffer, 1, readSize, fd) == 0)
-        {
-            perror("fwrite error");
-            fclose(fd);
-            return ILLEGAL_ACCESS;
-        }
-        remaining -= readSize;
-    }
-
-    /* 切掉多余的部分 */
-    ftruncate(fileno(fd), ftell(fd));
-    fclose(fd);
-}
-
-/* 节点在中序遍历中的位置 */
-static int findInInOrderPosition(AVLTreeNode * root, contactPerson *data, int *position)
-{
-    if(root == NULL)
-    {
-        return 0;
-    }
-    int leftResult = findInInOrderPosition(root->left, data, position);
-    if(leftResult != 0)
-    {
-        return leftResult;
-    }
-
-    (*position)++;
-
-    if(compareFunc(root->data, data) == 0)
-    {
-        return *position;
-    }
-    int rightResult = findInInOrderPosition(root->right, data, position);
-
-    if(rightResult != 0)
-    {
-        return rightResult;
-    }
-
     return SUCCESS;
 }
