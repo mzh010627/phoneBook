@@ -4,6 +4,9 @@
 #include<string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 /* 状态码 */
 enum STATUS_CODE
@@ -24,6 +27,7 @@ enum STATUS_CODE
             return MALLOC_ERROR;                \
         }                                       \
     } while(0)
+
 /* 释放节点 */
 #define FREE_NODE(node)                         \
     do                                          \
@@ -34,6 +38,7 @@ enum STATUS_CODE
             node = NULL;                        \
         }                                       \
     } while(0)
+
 /* 树判空 */
 #define CHECK_NODE_NULL(phoneBook)              \
     do                                          \
@@ -44,6 +49,12 @@ enum STATUS_CODE
         }                                       \
     } while(0)
 
+/* 保存联系人  */
+static int phoneBookSave(phoneBook *pPhoneBook, contactPerson *data);
+/* 通讯录读取 */
+static int pBRead();
+/* 通讯录判空 */
+static int isFileEmpty();
 
 /* 比较函数 */
 int compareFunc(ELEMENTTYPE p1, ELEMENTTYPE p2)
@@ -62,9 +73,7 @@ int printFunc(ELEMENTTYPE p1)
 
 }
 
-
 /* 打印界面 */
-
 void menu()//菜单
 {
     system("clear");//清屏
@@ -73,11 +82,10 @@ void menu()//菜单
     printf("| 2.查找指定联系人信息           |\n");
     printf("| 3.删除指定联系人信息           |\n");
     printf("| 4.修改指定联系人信息           |\n");
-    printf("| 按0退出程序                    |\n");
+    printf("| 按任意数字键退出               |\n");
     printf("----------------------------------\n");
 
 }
-
 
 /* 通讯录初始化 */
 int phoneBookTreeInit(phoneBook **pPhoneBook)
@@ -133,13 +141,43 @@ static contactPerson* findAContact(phoneBook *pPhoneBook, char *name)
     return NULL;
 }
 
+/* 保存联系人 */
+static int phoneBookSave(phoneBook *pPhoneBook, contactPerson *data)
+{
+    #if 0
+    int fd = open("./phoneBook.txt", O_RDWR | O_CREAT |O_APPEND, 0644);
+    if (fd == -1) 
+    {
+        perror("open error");
+        return UNDERFLOW;
+    }
+   
+    ssize_t byteWrite = write(fd, data, sizeof(phoneBook));
+    if(byteWrite == -1)
+    {
+        perror("write error");
+        return UNDERFLOW;
+    }
+    // write(fd, "\n", 1);
+    close(fd);
+    return SUCCESS;
+    #endif
+    FILE *file = fopen("phoneBook.txt", "aw");
+    if(file == NULL)
+    {
+        printf("无法打开文件\n");
+        return UNDERFLOW;
+    }
+    fprintf(file, "姓名：%s\t 号码：%s\n", data->name,data->teleNumber);
+    fclose(file);
+    return SUCCESS;
+}
+
 /* 插入新的联系人 */
 int phoneBookTreeInsert(phoneBook *pPhoneBook)
 {
-
     /* 判空 */
     CHECK_MALLOC_ERROR(pPhoneBook);
-
 
     contactPerson *data = (contactPerson*)malloc(sizeof(contactPerson));
     if (data == NULL)
@@ -149,28 +187,91 @@ int phoneBookTreeInsert(phoneBook *pPhoneBook)
     /* 清除脏数据 */
     memset(data, 0, sizeof(contactPerson));
 
-    printf("请输入姓名\n");
+    printf("请输入姓名: ");
     scanf("%s", data->name);
 
-    printf("请输入电话号码\n");
-    scanf("%s",  data->teleNumber);
+    printf("请输入电话号码: ");
+    scanf("%s", data->teleNumber);
 
-    /* 插入 */
+    /* 通讯录保存 */
     AVLInsert(pPhoneBook, data);
+    printf("是否保存联系人? 1、是 2、否 ");
+    int choice = 0;
+    scanf("%d", &choice);
+    switch (choice)
+    {
+        case 1: phoneBookSave(pPhoneBook, data);  
+                printf("保存联系人成功！🎉\n");
+                sleep(1);
+                break;
+        default: break;
+    }
     /* 反馈 */
-    printf("插入成功\n");
-    sleep(1);
-
     return SUCCESS;
 }
 
+/* 通讯录读取 */
+#if 1
+static int pBRead()
+{
+    #if 1
+    int fd = open("./phoneBook.txt", O_RDONLY);
+    if(fd == -1)
+    {
+        perror("open error");
+        return UNDERFLOW;
+    }
+    #if 0
+    /* 文件长度 */
+    off_t size = lseek(fd, 0, SEEK_END);
 
+    lseek(fd, 0, SEEK_SET);
+    #endif
 
+    char buffer[1024];
+    memset(buffer, 0, sizeof(buffer));
+    char *lineStart = buffer;  // 行的起始位置
+    int bytesRead;
+    read(fd, buffer, sizeof(buffer) - 1);
+
+    printf("%s\n", buffer);
+    close(fd);
+    return SUCCESS;
+    #endif
+    
+}
+#endif
+
+/* 通讯录判空 */
+#if 1
+static int isFileEmpty()
+{
+    int fd = open("./phoneBook.txt", O_RDONLY);
+    if(fd == -1)
+    {
+        perror("open error");
+        return UNDERFLOW;
+    }
+    off_t size = lseek(fd, 0, SEEK_END);
+    if(size == 0)
+    {
+        printf("文件为空\n");
+        sleep(1);
+        return UNDERFLOW;
+    }
+    // return SUCCESS;
+    close(fd);
+}
+#endif
 /* 联系人的查找 */
 int phoneBookTreeFind(phoneBook *pPhoneBook)
 {
+    /* 通讯录文件判空 */
+    isFileEmpty();
     /* 判空 */
     CHECK_NODE_NULL(pPhoneBook);
+    /* 通讯录读取 */
+    pBRead();
     /* 输入姓名 */
     char *name = malloc(BUFFER_SIZE1);
     memset(name, 0, BUFFER_SIZE1);
@@ -184,12 +285,12 @@ int phoneBookTreeFind(phoneBook *pPhoneBook)
         sleep(1);//睡眠
         return SUCCESS;
     }
-    printf("姓名：%s\n", data->name);
+    printf("姓名：%s\t", data->name);
     printf("电话：%s\n", data->teleNumber);
+    sleep(2);//睡眠
 
     return SUCCESS;
 }
-
 
 /* 联系人的修改 */
 int phoneBookTreeChange(phoneBook *pBstree)
@@ -216,10 +317,31 @@ int phoneBookTreeChange(phoneBook *pBstree)
 
 }
 
+/* 清空通讯录 */
+int clearPhone()
+{
+    printf("是否清空通讯录? 1、是 2、否\n");
+    int choice = 0;
+    scanf("%d", &choice);
+    if(choice == 1)
+    {
+        int fd = open("./phoneBook.txt", O_TRUNC);
+        if(fd == -1)
+        {
+            perror("open error");
+            return UNDERFLOW;
+        }
+        close(fd);
+        printf("清空成功！\n");
+        sleep(1);
+    }
+}
 
 /* 联系人的删除 */
 int phoneBookDelete(phoneBook *pPhoneBook)
 {
+    /* 清空通讯录 */
+    clearPhone();
     /* 判空 */
     CHECK_NODE_NULL(pPhoneBook);
     /* 输入姓名 */
@@ -237,6 +359,7 @@ int phoneBookDelete(phoneBook *pPhoneBook)
     }
     /* 删除 */
     AVLDelete(pPhoneBook, data);
+    printf("删除成功!\n");
+    sleep(1);
     return SUCCESS;
 }
-

@@ -1,4 +1,4 @@
-src=main.c doubleLinkList.c doubleLinkListQueue.c AVLTree.c phoneBook.c
+src=*.c
 test:${src}
 	gcc ${src} -o test
 

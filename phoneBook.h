@@ -2,13 +2,12 @@
 #define __PHONEBOOK_H_
 #include "common.h"
 
-#define BUFFER_SIZE1 20
-#define BUFFER_SIZE2 12
+#define BUFFER_SIZE1 5
+#define BUFFER_SIZE2 8
 
 
 typedef AVLTree phoneBook;
 // typedef AVLTreeNode contactPerson;
-
 /* 定义通讯录人员信息结构体 */
 typedef struct contactPerson
 {

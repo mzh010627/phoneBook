@@ -3,17 +3,13 @@
 #include "phoneBook.h"
 #include <string.h>
 
-
 enum SECLET
 {
-
     INSERT = 1,
     FIND,
     DELETE,
-    MODIFY,
-    QUIT
+    MODIFY
 };
-
 
 int main()
 {
@@ -22,11 +18,9 @@ int main()
     /* 通讯录初始化 */
     phoneBookTreeInit(&BookStree);
 
-
-
     int choice = 0;    
     //int count = 0;    
-    while ( choice < QUIT && choice >= 0)
+    while (1)
     {
         /* 打印界面 */
         menu();//菜单
@@ -60,10 +54,9 @@ int main()
                 break;
             }
             default:
-                choice = QUIT;
+            exit(0);
         }
     }
-
-
+    
     return 0;
 }
