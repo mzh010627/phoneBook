@@ -8,7 +8,9 @@ enum SECLET
     INSERT = 1,
     FIND,
     DELETE,
-    MODIFY
+    READ,
+    MODIFY,
+    EMPTY
 };
 
 int main()
@@ -47,10 +49,22 @@ int main()
                 phoneBookDelete(BookStree);
                 break;
             }
+            /* 显示通讯录 */
+            case READ:
+                phoneBookRead();
+                getchar();
+                getchar();
+                menu();
+                break;
             /* 修改联系人信息 */
             case MODIFY:
             {
                 phoneBookTreeChange(BookStree);
+                break;
+            }
+            case EMPTY:
+            {
+                clearPhone();
                 break;
             }
             default:

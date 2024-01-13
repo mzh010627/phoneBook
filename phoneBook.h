@@ -32,11 +32,14 @@ int phoneBookTreeFind(phoneBook *pPhoneBook);
 /* 联系人的修改 */
 int phoneBookTreeChange(phoneBook *pPhoneBook);
 
-
 /* 联系人的删除 */
 int phoneBookDelete(phoneBook *pPhoneBook);
 
+/* 通讯录的读取 */
+int phoneBookRead();
 
+/* 清空通讯录 */
+int clearPhone();
 
 
 

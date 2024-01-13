@@ -51,8 +51,7 @@ enum STATUS_CODE
 
 /* 保存联系人  */
 static int phoneBookSave(phoneBook *pPhoneBook, contactPerson *data);
-/* 通讯录读取 */
-static int pBRead();
+
 /* 通讯录判空 */
 static int isFileEmpty();
 
@@ -81,7 +80,9 @@ void menu()//菜单
     printf("| 1.添加联系人信息               |\n");
     printf("| 2.查找指定联系人信息           |\n");
     printf("| 3.删除指定联系人信息           |\n");
-    printf("| 4.修改指定联系人信息           |\n");
+    printf("| 4.查看通讯录                   |\n");
+    printf("| 5.修改指定联系人信息           |\n");
+    printf("| 6.清空通讯录                   |\n");
     printf("| 按任意数字键退出               |\n");
     printf("----------------------------------\n");
 
@@ -212,29 +213,33 @@ int phoneBookTreeInsert(phoneBook *pPhoneBook)
 
 /* 通讯录读取 */
 #if 1
-static int pBRead()
+int phoneBookRead()
 {
     #if 1
+    
     int fd = open("./phoneBook.txt", O_RDONLY);
     if(fd == -1)
     {
         perror("open error");
         return UNDERFLOW;
     }
-    #if 0
+    #if 1
     /* 文件长度 */
     off_t size = lseek(fd, 0, SEEK_END);
+    if(size == 0)
+    {
+        printf("文件为空\n");
+        return UNDERFLOW;
+    }
+    #endif
 
     lseek(fd, 0, SEEK_SET);
-    #endif
 
     char buffer[1024];
     memset(buffer, 0, sizeof(buffer));
-    char *lineStart = buffer;  // 行的起始位置
-    int bytesRead;
     read(fd, buffer, sizeof(buffer) - 1);
-
     printf("%s\n", buffer);
+    
     close(fd);
     return SUCCESS;
     #endif
@@ -259,7 +264,7 @@ static int isFileEmpty()
         sleep(1);
         return UNDERFLOW;
     }
-    // return SUCCESS;
+    return SUCCESS;
     close(fd);
 }
 #endif
@@ -270,8 +275,7 @@ int phoneBookTreeFind(phoneBook *pPhoneBook)
     isFileEmpty();
     /* 判空 */
     CHECK_NODE_NULL(pPhoneBook);
-    /* 通讯录读取 */
-    pBRead();
+
     /* 输入姓名 */
     char *name = malloc(BUFFER_SIZE1);
     memset(name, 0, BUFFER_SIZE1);
