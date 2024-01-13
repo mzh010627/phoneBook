@@ -293,6 +293,7 @@ int phoneBookTreeDestroy(phoneBook *pPhoneBook, int save)
     }
     else
     {
+        remove("phoneBook.bak");
         printf("已清空联系人\n");
     }
     
