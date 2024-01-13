@@ -12,7 +12,6 @@ typedef AVLTree phoneBook;
 /* 定义通讯录人员信息结构体 */
 typedef struct contactPerson
 {
-    int ID;
     char name[BUFFER_SIZE1];
     char teleNumber[BUFFER_SIZE2];
 

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <errno.h>
 
 /* 状态码 */
 enum STATUS_CODE
@@ -16,6 +17,7 @@ enum STATUS_CODE
     ILLEGAL_ACCESS = -3,
     UNDERFLOW = -4,
 };
+#define BUFFER_SIZE 1024
 /* 宏函数 */
 /* 检测分配空间是否成功 */
 #define CHECK_MALLOC_ERROR(ptr)                 \
@@ -47,13 +49,27 @@ enum STATUS_CODE
     } while(0)
 
 
+
+
+
+/* 静态函数声明 */
+/* 通讯录保存 */
+static int savePhoneBook(phoneBook *pPhoneBook, contactPerson *data, char* mode);
+/* 通讯录读取 */
+static int readPhoneBook(phoneBook *pPhoneBook);
+/* 通讯录联系人删除的本地处理 */
+static int deletePhoneBook(phoneBook *pPhoneBook,contactPerson *data);
+/* 节点在中序遍历中的位置 */
+static int findInInOrderPosition(AVLTreeNode * root, contactPerson *data, int *position);
+
+
 /* 比较函数 */
 int compareFunc(ELEMENTTYPE p1, ELEMENTTYPE p2)
 {
     contactPerson *data1 = (contactPerson*)p1;
     contactPerson *data2 = (contactPerson*)p2;
-    printf("p1:%s\n", data1->name);
-    printf("p2:%s\n", data2->name);
+    // printf("p1:%s\n", data1->name);
+    // printf("p2:%s\n", data2->name);
     /* 数据有效性 */
     if(data1->name == NULL || data2->name == NULL)
     {
@@ -73,7 +89,6 @@ int printFunc(ELEMENTTYPE p1)
 
 
 /* 打印界面 */
-
 void menu()//菜单
 {
     system("clear");//清屏
@@ -82,84 +97,10 @@ void menu()//菜单
     printf("| 2.查找指定联系人信息           |\n");
     printf("| 3.删除指定联系人信息           |\n");
     printf("| 4.修改指定联系人信息           |\n");
+    printf("| 5.查看通讯录                   |\n");
     printf("| 按0退出程序                    |\n");
     printf("----------------------------------\n");
 
-}
-
-
-
-/* 通讯录保存 */
-static int savePhoneBook(phoneBook *pPhoneBook, contactPerson *data)
-{
-
-    /* 判断是删除还是修改 */
-    int size = data->ID;
-    char * mode = "ab+";
-    if(size+1 < pPhoneBook->size)
-    {
-        /* 修改 */
-        mode = "rb+";
-    }
-    
-    /*文件不存在则新建 */
-    FILE *fd = fopen("phoneBook.bak", mode);
-    
-    
-    if(fd == NULL)
-    {
-        return ILLEGAL_ACCESS;
-    }
-    /* 定位到位置 */
-    fseek(fd, sizeof(contactPerson) * size, SEEK_SET);
-    /* 保存 */
-    fwrite(data, sizeof(contactPerson), 1, fd);
-    fclose(fd);
-    return SUCCESS;
-}
-/* 通讯录读取 */
-static int readPhoneBook(phoneBook *pPhoneBook)
-{
-    FILE *fd = fopen("phoneBook.bak", "rb+");
-    if(fd == NULL)
-    {
-        return ILLEGAL_ACCESS;
-    }
-    /* 获取文件大小 */
-    if(fseek(fd,0,SEEK_END) != 0)
-    {
-        printf("fseek error\n");
-        fclose(fd);
-        return ILLEGAL_ACCESS;
-    }
-    int size = ftell(fd);
-    for(int idx = 0; idx < (size/sizeof(contactPerson));idx++)
-    {
-        /* 读取 */
-        contactPerson data;// 用来接数据
-        fseek(fd, sizeof(contactPerson) * idx, SEEK_SET);
-        fread(&data, sizeof(contactPerson), 1, fd);
-        printf("ID: %d, Name: %s, TeleNumber: %s\n", data.ID, data.name, data.teleNumber);
-        /* 插入 */
-        contactPerson *pData = (contactPerson*)malloc(sizeof(contactPerson));
-        if(pData == NULL)
-        {
-            return MALLOC_ERROR;
-        }
-        memset(pData, 0, sizeof(contactPerson));
-        pData->ID = data.ID;
-        strncpy(pData->name, data.name, sizeof(char)*strlen(data.name));
-        strncpy(pData->teleNumber, data.teleNumber, sizeof(char)*strlen(data.teleNumber));
-        AVLInsert(pPhoneBook, pData);
-    }
-    
-    fclose(fd);
-    return SUCCESS;
-}
-/* 通讯录联系人删除的本地处理 */
-static int deletePhoneBook(phoneBook *pPhoneBook,contactPerson *data)
-{
-    /* todo... */
 }
 
 /* 通讯录初始化 */
@@ -235,7 +176,6 @@ int phoneBookTreeInsert(phoneBook *pPhoneBook)
     /* 清除脏数据 */
     memset(data, 0, sizeof(contactPerson));
 
-    data->ID = pPhoneBook->size;
 
     printf("请输入姓名\n");
     scanf("%s", data->name);
@@ -257,14 +197,15 @@ int phoneBookTreeInsert(phoneBook *pPhoneBook)
     AVLInsert(pPhoneBook, data);
     /* 反馈 */
     printf("插入成功\n");
+    int count = 0;
+    findInInOrderPosition(pPhoneBook->root, data, &count);
+    printf("ID:%d\n", count);
 
     /* 保存 */
-    savePhoneBook(pPhoneBook, data);
+    savePhoneBook(pPhoneBook, data, "ab+");
 
     return SUCCESS;
 }
-
-
 
 /* 联系人的查找 */
 int phoneBookTreeFind(phoneBook *pPhoneBook)
@@ -277,19 +218,18 @@ int phoneBookTreeFind(phoneBook *pPhoneBook)
     printf("请输入姓名：\n");
     scanf("%s", name);
     /* 查找 */
-    contactPerson *data = (contactPerson*)((AVLTreeNode*)findAContact(pPhoneBook, name)->data);
-    if(data == NULL)
+    AVLTreeNode *Node = findAContact(pPhoneBook, name);
+    if(Node == NULL)
     {
         printf("未找到相匹配的联系人\n");
-        sleep(1);
         return SUCCESS;
     }
+    contactPerson *data = (contactPerson*)Node->data;
     printf("姓名：%s\n", data->name);
     printf("电话：%s\n", data->teleNumber);
 
     return SUCCESS;
 }
-
 
 /* 联系人的修改 */
 int phoneBookTreeChange(phoneBook *pPhoneBook)
@@ -302,22 +242,21 @@ int phoneBookTreeChange(phoneBook *pPhoneBook)
     printf("请输入姓名：\n");
     scanf("%s", name);
     /* 查找 */
-    contactPerson *data = (contactPerson*)((AVLTreeNode*)findAContact(pPhoneBook, name)->data);
-    if(data == NULL)
+    AVLTreeNode *Node = findAContact(pPhoneBook, name);
+    if(Node == NULL)
     {
         printf("未找到相匹配的联系人\n");
-        sleep(1);
         return SUCCESS;
     }
+    contactPerson *data = (contactPerson*)Node->data;
     /* 修改 */
     printf("请输入新的电话号码\n");
     scanf("%s", data->teleNumber);
     /* 保存 */
-    savePhoneBook(pPhoneBook, data);
+    savePhoneBook(pPhoneBook, data, "rb+");
     return SUCCESS;
 
 }
-
 
 /* 联系人的删除 */
 int phoneBookDelete(phoneBook *pPhoneBook)
@@ -330,13 +269,14 @@ int phoneBookDelete(phoneBook *pPhoneBook)
     printf("请输入姓名：\n");
     scanf("%s", name);
     /* 查找 */
-    contactPerson *data = (contactPerson*)((AVLTreeNode*)findAContact(pPhoneBook, name)->data);
-    if(data == NULL)
+    AVLTreeNode *Node = findAContact(pPhoneBook, name);
+    if(Node == NULL)
     {
         printf("未找到相匹配的联系人\n");
-        sleep(1);
         return SUCCESS;
     }
+    contactPerson *data = (contactPerson*)Node->data;
+    deletePhoneBook(pPhoneBook, data);
     /* 删除 */
     AVLDelete(pPhoneBook, data);
     return SUCCESS;
@@ -356,4 +296,155 @@ int phoneBookTreeDestroy(phoneBook *pPhoneBook)
 int phoneBookTreePrint(phoneBook *pPhoneBook)
 {
     return AVLInOrderTravel(pPhoneBook);
+}
+
+
+/* 静态函数部分 */
+
+/* 通讯录保存 */
+static int savePhoneBook(phoneBook *pPhoneBook, contactPerson *data, char* mode)
+{
+
+    /* 判断是删除还是修改 */
+    int size = 0;
+    findInInOrderPosition(pPhoneBook->root, data, &size);
+
+    
+    /*文件不存在则新建 */
+    FILE *fd = fopen("phoneBook.bak", mode);
+    
+    
+    if(fd == NULL)
+    {
+        return ILLEGAL_ACCESS;
+    }
+    /* 定位到位置 */
+    fseek(fd, sizeof(contactPerson) * (size-1), SEEK_SET);
+    /* 保存 */
+    fwrite(data, sizeof(contactPerson), 1, fd);
+    fclose(fd);
+    return SUCCESS;
+}
+
+/* 通讯录读取 */
+static int readPhoneBook(phoneBook *pPhoneBook)
+{
+    FILE *fd = fopen("phoneBook.bak", "rb+");
+    if(fd == NULL)
+    {
+        return ILLEGAL_ACCESS;
+    }
+    /* 获取文件大小 */
+    if(fseek(fd,0,SEEK_END) != 0)
+    {
+        printf("fseek error\n");
+        fclose(fd);
+        return ILLEGAL_ACCESS;
+    }
+    int size = ftell(fd);
+    for(int idx = 0; idx < (size/sizeof(contactPerson));idx++)
+    {
+        /* 读取 */
+        contactPerson data;// 用来接数据
+        fseek(fd, sizeof(contactPerson) * idx, SEEK_SET);
+        fread(&data, sizeof(contactPerson), 1, fd);
+        printf("Name: %s, TeleNumber: %s\n", data.name, data.teleNumber);
+        /* 插入 */
+        contactPerson *pData = (contactPerson*)malloc(sizeof(contactPerson));
+        if(pData == NULL)
+        {
+            return MALLOC_ERROR;
+        }
+        memset(pData, 0, sizeof(contactPerson));
+        strncpy(pData->name, data.name, sizeof(char)*strlen(data.name));
+        strncpy(pData->teleNumber, data.teleNumber, sizeof(char)*strlen(data.teleNumber));
+        AVLInsert(pPhoneBook, pData);
+    }
+    
+    fclose(fd);
+    return SUCCESS;
+}
+
+/* 通讯录联系人删除的本地处理 */
+static int deletePhoneBook(phoneBook *pPhoneBook,contactPerson *data)
+{
+    FILE * fd = fopen("phoneBook.bak","rb+");
+    if(fd == NULL)
+    {
+        perror("fopen error");
+        return ILLEGAL_ACCESS;
+    }
+
+    /* 定位要删除的位置 */
+    int size = 0;
+    findInInOrderPosition(pPhoneBook->root, data, &size);
+    long start = sizeof(contactPerson) * size;
+    if(fseek(fd, start, SEEK_SET) != 0)
+    {
+        perror("fseek error");
+        return ILLEGAL_ACCESS;
+    }
+
+    /* 迁移后续数据 */
+    char buffer[BUFFER_SIZE] = {0};
+    long remaining = sizeof(contactPerson);
+    while(remaining > 0)
+    {
+        size_t readSize = fread(buffer, 1, sizeof(buffer), fd);
+        if(readSize == 0)
+        {
+            perror("fread error");
+            fclose(fd);
+            return ILLEGAL_ACCESS;
+        }
+
+        /* 重新定位指针 */
+        if(fseek(fd, -(readSize + sizeof(contactPerson)), SEEK_CUR) != 0)
+        {
+            perror("fseek error");
+            fclose(fd);
+            return ILLEGAL_ACCESS;
+        }
+        /* 写入 */
+        if(fwrite(buffer, 1, readSize, fd) == 0)
+        {
+            perror("fwrite error");
+            fclose(fd);
+            return ILLEGAL_ACCESS;
+        }
+        remaining -= readSize;
+    }
+
+    /* 切掉多余的部分 */
+    ftruncate(fileno(fd), ftell(fd));
+    fclose(fd);
+}
+
+/* 节点在中序遍历中的位置 */
+static int findInInOrderPosition(AVLTreeNode * root, contactPerson *data, int *position)
+{
+    if(root == NULL)
+    {
+        return 0;
+    }
+    int leftResult = findInInOrderPosition(root->left, data, position);
+    if(leftResult != 0)
+    {
+        return leftResult;
+    }
+
+    (*position)++;
+
+    if(compareFunc(root->data, data) == 0)
+    {
+        return *position;
+    }
+    int rightResult = findInInOrderPosition(root->right, data, position);
+
+    if(rightResult != 0)
+    {
+        return rightResult;
+    }
+
+    return SUCCESS;
 }
