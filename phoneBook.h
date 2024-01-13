@@ -37,7 +37,7 @@ int phoneBookTreeChange(phoneBook *pPhoneBook);
 int phoneBookDelete(phoneBook *pPhoneBook);
 
 /* 通讯录销毁 */
-int phoneBookTreeDestroy(phoneBook *pPhoneBook);
+int phoneBookTreeDestroy(phoneBook *pPhoneBook, int save);
 
 /* 打印所有联系人 */
 int phoneBookTreePrint(phoneBook *pPhoneBook);
