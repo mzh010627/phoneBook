@@ -11,7 +11,8 @@ enum SECLET
     FIND,
     DELETE,
     MODIFY,
-    QUIT
+    PRINT,
+    QUIT,
 };
 
 
@@ -53,6 +54,12 @@ int main()
                 phoneBookDelete(BookStree);
                 break;
             }
+            /* 打印联系人表 */
+            case PRINT:
+            {
+                phoneBookTreePrint(BookStree);
+                break;
+            }
             /* 修改联系人信息 */
             case MODIFY:
             {
@@ -61,6 +68,7 @@ int main()
             }
             default:
                 choice = QUIT;
+                phoneBookTreeDestroy(BookStree);
         }
     }
 

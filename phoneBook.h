@@ -12,6 +12,7 @@ typedef AVLTree phoneBook;
 /* 定义通讯录人员信息结构体 */
 typedef struct contactPerson
 {
+    int ID;
     char name[BUFFER_SIZE1];
     char teleNumber[BUFFER_SIZE2];
 
@@ -33,9 +34,14 @@ int phoneBookTreeFind(phoneBook *pPhoneBook);
 /* 联系人的修改 */
 int phoneBookTreeChange(phoneBook *pPhoneBook);
 
-
 /* 联系人的删除 */
 int phoneBookDelete(phoneBook *pPhoneBook);
+
+/* 通讯录销毁 */
+int phoneBookTreeDestroy(phoneBook *pPhoneBook);
+
+/* 打印所有联系人 */
+int phoneBookTreePrint(phoneBook *pPhoneBook);
 
 
 
