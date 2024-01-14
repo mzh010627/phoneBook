@@ -3,15 +3,18 @@
 #include "phoneBook.h"
 #include <string.h>
 
+
 enum SECLET
 {
+
     INSERT = 1,
     FIND,
     DELETE,
-    READ,
     MODIFY,
-    EMPTY
+    READ,
+    CLEAR,
 };
+
 
 int main()
 {
@@ -20,12 +23,13 @@ int main()
     /* 通讯录初始化 */
     phoneBookTreeInit(&BookStree);
 
+    /* 打印界面 */
+    menu();//菜单
+
     int choice = 0;    
-    //int count = 0;    
+    int flag = 0;    
     while (1)
     {
-        /* 打印界面 */
-        menu();//菜单
         printf("请输入选项\n");
         scanf("%d", &choice);
         switch (choice)
@@ -34,6 +38,7 @@ int main()
             case INSERT:
             {
                 phoneBookTreeInsert(BookStree);
+                flag = 0;
                 break;
             }
 
@@ -41,36 +46,61 @@ int main()
             case FIND:
             {
                 phoneBookTreeFind(BookStree);
+                flag = 1;
                 break;
             }
             /* 删除联系人 */
             case DELETE:
             {
                 phoneBookDelete(BookStree);
+                flag = 0;
                 break;
             }
-            /* 显示通讯录 */
-            case READ:
-                phoneBookRead();
-                getchar();
-                getchar();
-                menu();
-                break;
             /* 修改联系人信息 */
             case MODIFY:
             {
                 phoneBookTreeChange(BookStree);
+                flag = 0;
                 break;
             }
-            case EMPTY:
+            /* 打印联系人表 */
+            case READ:
             {
-                clearPhone();
+                #if 0
+                phoneBookRead();
+                #else
+                phoneBookTreePrint(BookStree);
+                flag = 1;
+                #endif
+                break;
+            }
+            /* 通讯录清空/销毁 */
+            case CLEAR:
+            {
+                clearPhone(BookStree);
+                flag = 1;
                 break;
             }
             default:
-            exit(0);
+                isQuit(BookStree);
+                flag = 0;
+                break;
         }
+        #if 1
+        if(flag)
+        {
+           
+            /* 等待一个按键*/
+            printf("按回车键继续...");
+            getchar();
+            getchar();
+            printf("\n");
+        }
+        #endif
+       
+        menu();//菜单
     }
-    
+
+
     return 0;
 }

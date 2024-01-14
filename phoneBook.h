@@ -2,12 +2,13 @@
 #define __PHONEBOOK_H_
 #include "common.h"
 
-#define BUFFER_SIZE1 5
-#define BUFFER_SIZE2 8
+#define BUFFER_SIZE1 20
+#define BUFFER_SIZE2 12
 
 
 typedef AVLTree phoneBook;
 // typedef AVLTreeNode contactPerson;
+
 /* 定义通讯录人员信息结构体 */
 typedef struct contactPerson
 {
@@ -35,12 +36,16 @@ int phoneBookTreeChange(phoneBook *pPhoneBook);
 /* 联系人的删除 */
 int phoneBookDelete(phoneBook *pPhoneBook);
 
-/* 通讯录的读取 */
-int phoneBookRead();
+/* 通讯录销毁 */
+int phoneBookTreeDestroy(phoneBook *pPhoneBook, int save);
 
-/* 清空通讯录 */
-int clearPhone();
+/* 打印所有联系人 */
+int phoneBookTreePrint(phoneBook *pPhoneBook);
 
+/* 清空/删除通讯录 */
+int clearPhone(phoneBook *pPhoneBook);
 
+/* 退出 */
+int isQuit();
 
 #endif  //__BINARY_SEARCH_TREE_H_
