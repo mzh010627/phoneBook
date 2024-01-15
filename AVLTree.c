@@ -88,11 +88,11 @@ int AVLInit(AVLTree **pBstree, int (*compareFunc)(ELEMENTTYPE val1, ELEMENTTYPE 
         bstree->printFunc = printFunc;
     }
 
-    bstree->root = createAVLTreeNewNode(0, NULL);
-    if (bstree->root == NULL)
-    {
-        return MALLOC_ERROR;
-    }
+    // bstree->root = createAVLTreeNewNode(0, NULL);
+    // if (bstree->root == NULL)
+    // {
+    //     return MALLOC_ERROR;
+    // }
     
     *pBstree = bstree;
     return ret;
@@ -438,11 +438,12 @@ int AVLInsert(AVLTree *pBstree, ELEMENTTYPE val)
     int ret = 0;
     
     /* 空树 */
-    if (pBstree->size == 0)
+    // if (pBstree->size == 0)
+    if(pBstree->root == NULL)
     {
         /* 更新树的结点 */
         (pBstree->size)++;
-        pBstree->root->data = val;
+        pBstree->root = createAVLTreeNewNode(val, NULL);
         insertNodeAfter(pBstree, pBstree->root);
         return ret;
     }
