@@ -6,4 +6,4 @@ g:${src}
 	gcc -g ${src} -o gtest
 
 clean:
-	@rm -rf test gtest
+	@rm -rf test gtest phoneBook.txt
